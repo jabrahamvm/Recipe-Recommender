@@ -33,7 +33,7 @@ def recommender(ingredients):
     recipe_ids = recipe_ingredients["recipe_id"].iloc[sorted_indexes].values[0:20].tolist()
     recipes_names = recipe_ingredients["recipe_name"].iloc[sorted_indexes].values[0:20].tolist()
     my_dict = [{"id": recipe_ids[i], "name":recipes_names[i]} for i in range(len(recipe_ids))]
-    return jsonify(my_dict)
+    return my_dict
     # return json.dumps(
     #     recipe_ingredients['recipe_name'].iloc[sorted_indexes].values[0:20].tolist())
 
