@@ -30,8 +30,10 @@ def recommender(ingredients):
 
     similarity_list = cosine_similarity(ingredients_v, tfidf_ingredients)
     sorted_indexes = np.argsort(similarity_list[0])[::-1]
-    return json.dumps(
-        recipe_ingredients['recipe_name'].iloc[sorted_indexes].values[0:20].tolist())
+    recipe_ids = recipe_ingredients["recipe_id"].iloc[sorted_indexes].values[0:20].tolist()
+    recipes_names = recipe_ingredients["recipe_name"].iloc[sorted_indexes].values[0:20].tolist()
+    my_dict = [{"id": recipe_ids[i], "name":recipes_names[i]} for i in range(len(recipe_ids))]
+    return jsonify(my_dict)
 
 class status (Resource):
     def get(self):
