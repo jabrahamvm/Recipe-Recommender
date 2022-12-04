@@ -14,28 +14,23 @@ app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
+vectorizer = joblib.load("./vectorizer.pkl")
+tfidf_ingredients = joblib.load("./tfidf_recipe.pkl")
+recipe_ingredients = pd.read_csv(
+    "https://raw.githubusercontent.com/jabrahamvm/Recipe-Recommender/nutrition/parsed_ds.csv", 
+    encoding="UTF-8",
+    nrows=5000)
+recipe_ingredients = recipe_ingredients.dropna()
+
 def recommender(ingredients):
     '''Generate recipe recommendations from ingredient data'''
-    # TODO Load model instead of training.
-    vectorizer = joblib.load("./vectorizer.pkl")
-
-    recipe_ingredients = pd.read_csv(
-        "https://raw.githubusercontent.com/jabrahamvm/Recipe-Recommender/nutrition/parsed_ds.csv", 
-        encoding="UTF-8",
-        nrows=5000)
-    recipe_ingredients = recipe_ingredients.dropna()
-
-    tfidf_ingredients = joblib.load("./tfidf_recipe.pkl")
     ingredients_v = vectorizer.transform([ingredients])
-
     similarity_list = cosine_similarity(ingredients_v, tfidf_ingredients)
     sorted_indexes = np.argsort(similarity_list[0])[::-1]
     recipe_ids = recipe_ingredients["recipe_id"].iloc[sorted_indexes].values[0:20].tolist()
     recipes_names = recipe_ingredients["recipe_name"].iloc[sorted_indexes].values[0:20].tolist()
     my_dict = [{"id": recipe_ids[i], "name":recipes_names[i]} for i in range(len(recipe_ids))]
     return my_dict
-    # return json.dumps(
-    #     recipe_ingredients['recipe_name'].iloc[sorted_indexes].values[0:20].tolist())
 
 class status (Resource):
     def get(self):
@@ -49,8 +44,14 @@ class Recommender(Resource):
         ingredients = request.args.get('ingredients')
         return jsonify({'data': recommender(ingredients)})
 
+class Recipe(Resource):
+    def get(self):
+        recipeId = request.args.get('recipeId')
+        return jsonify(recipe_ingredients[recipe_ingredients["recipe_id"] == recipeId].to_dict(orient="records")[0])
+
 api.add_resource(status, '/')
 api.add_resource(Recommender, '/recommender')
+api.add_resource(Recipe, '/recipe')
 
 if __name__ == '__main__':
     app.run()
