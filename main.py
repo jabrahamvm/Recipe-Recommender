@@ -46,7 +46,7 @@ class Recommender(Resource):
 
 class Recipe(Resource):
     def get(self):
-        recipeId = request.args.get('recipeId')
+        recipeId = int(request.args.get('recipeId'))
         return jsonify(recipe_ingredients[recipe_ingredients["recipe_id"] == recipeId].to_dict(orient="records")[0])
 
 api.add_resource(status, '/')
